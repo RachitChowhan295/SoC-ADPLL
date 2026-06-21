@@ -1,20 +1,20 @@
-module dtc_model#(
-    parameter int STEP_FS       = 5000,
-    parameter int BASE_DELAY_FS = 5000,
-    parameter int MAX_CODE      = 31
+module dtc_model #(
+    parameter STEP_FS       = 5000,
+    parameter BASE_DELAY_FS = 5000,
+    parameter MAX_CODE      = 31
 )(
-    input  logic clk_in,
-    input  logic rst_n,
-    input  logic [$clog2(MAX_CODE+1)-1:0] dtc_code,
-    output logic clk_out
+    input clk_in,
+    input rst_n,
+    input [4:0] dtc_code,
+    output reg clk_out
 );
 
 //Delay calculation
 time delay_fs;
 
 //Total delay
-always_comb begin
-    delay_fs = BASE_DELAY_FS + (time'(dtc_code) * STEP_FS);
+always @(*) begin
+    delay_fs = BASE_DELAY_FS + (dtc_code * STEP_FS);
 end
 
 //Delayed clock output
