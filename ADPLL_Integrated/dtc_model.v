@@ -1,5 +1,3 @@
-`timescale 1fs/1fs
-
 module dtc_model #(
     parameter int STEP_FS       = 5000,
     parameter int BASE_DELAY_FS = 5000,
