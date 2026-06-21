@@ -1,4 +1,4 @@
-module dtc_model #(
+module dtc_model(
     parameter int STEP_FS       = 5000,
     parameter int BASE_DELAY_FS = 5000,
     parameter int MAX_CODE      = 31
