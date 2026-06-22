@@ -1,6 +1,8 @@
+`timescale 1ns/1ps
+
 module lock_detector(
     input  wire        clk,
-    input  wire        rst_n,
+    input  wire        rst,      
     input  wire signed [31:0] error,   
     output reg         lock
 );
@@ -12,8 +14,8 @@ reg [5:0] counter;
 
 wire signed [31:0] abs_error = error[31] ? -error : error; 
 
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
+always @(posedge clk or posedge rst) begin  
+    if(rst) begin                           
         counter <= 0;
         lock    <= 0;
     end
