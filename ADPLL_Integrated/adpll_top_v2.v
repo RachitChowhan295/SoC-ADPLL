@@ -16,7 +16,8 @@ module adpll_top(
 
     wire signed [24:0] coarse_error;
     wire signed [5:0] fine_error;
-    
+    wire signed [15:0] ctrl_word;
+    wire dco_clk;
 
     phase_detector pd_inst (
         .ref_clk(ref_clk), 
