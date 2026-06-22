@@ -9,7 +9,8 @@ module adpll_top(
     input wire [6:0] F_mod,
     input wire c2_prev,
     
-    output wire signed [24:0] phase_residual
+    output wire signed [24:0] phase_residual,
+    output wire signed [15:0] ctrl_word_out
 );
 
 
@@ -52,10 +53,10 @@ module adpll_top(
    // TDC MODULE HERE-------
 
     assign ctrl_word_out = ctrl_word;
-    reg [15:0] counter // added to keep a track of the number of cycles taking place
-    wire do_update
+    reg [15:0] counter; // added to keep a track of the number of cycles taking place
+    wire do_update;
     wire signed [31:0] current_phi_error; 
-    wire signed [15:0] ctrl_word
+    wire signed [15:0] ctrl_word;
 
     cic_decimator cic_inst(
         .clk(ref_clk),              //  Use ref_clk, not clk
