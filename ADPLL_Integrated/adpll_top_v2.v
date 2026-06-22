@@ -61,7 +61,7 @@ module adpll_top(
 
     cic_decimator cic_inst(
         .clk(ref_clk),              
-        .rst_n(~rst),               
+        .rst(rst),               
         .phase_residual(phase_residual), 
         .counter(counter),
         .do_update(do_update),      
@@ -79,7 +79,7 @@ module adpll_top(
     
     pi_loop_filter filter (
         .clk(ref_clk),              
-        .rst_n(~rst),               
+        .rst(rst),               
         .enable(do_update),         
         .error(current_phi_error),
         .kp(kp),
@@ -96,7 +96,7 @@ module adpll_top(
     wire lock;                    
     lock_detector detector(
         .clk(ref_clk),              
-        .rst_n(~rst),              
+        .rst(rst),              
         .error(current_phi_error),
         .lock(lock)        
     );
