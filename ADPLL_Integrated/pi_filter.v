@@ -1,7 +1,5 @@
 `timescale 1ns/1ps
 
-// PI-Filter uses all inputs to generate a ctrl_word which changes the output finally
-
 module pi_loop_filter #(
     parameter ERR_W      = 32,
     parameter GAIN_W     = 32,
@@ -15,7 +13,7 @@ module pi_loop_filter #(
     parameter signed [ACCUM_W-1:0] INTEG_MIN = -32'sd2147483647
 )(
     input  wire clk,
-    input  wire rst_n,
+    input  wire rst,       // Changed to active-high
     input  wire enable,
 
     input  wire signed [ERR_W-1:0] error,
@@ -40,11 +38,8 @@ module pi_loop_filter #(
     wire signed [ACCUM_W-1:0] pi_out;
 
     assign p_term = p_mult >>> FRAC_BITS;
-
     assign integrator_next = integrator - i_mult;
-
     assign pi_out = (integrator_next >>> FRAC_BITS) - p_term;
-
 
     wire signed [ACCUM_W-1:0] alpha_term;
     wire signed [ACCUM_W-1:0] beta_term;
@@ -52,11 +47,10 @@ module pi_loop_filter #(
 
     assign alpha_term = ((pi_out <<< 2) + pi_out) >>> 3;
     assign beta_term  = ((ctrl_word_q <<< 1) + ctrl_word_q) >>> 3;
-
     assign ctrl_next = alpha_term + beta_term;
 
-  always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+    always @(posedge clk or posedge rst) begin 
+        if (rst) begin                         
             integrator  <= PRELOAD;
             ctrl_word_q <= PRELOAD;
             ctrl_word   <= PRELOAD[OUT_W-1:0];
@@ -70,7 +64,6 @@ module pi_loop_filter #(
                 integrator <= integrator_next;
 
             ctrl_word_q <= ctrl_next;
-
 
             if (ctrl_next > 32767)
                 ctrl_word <= 16'sd32767;
