@@ -3,7 +3,7 @@
 // TB to be run with gain scheduler
 
 module pi_loop_filter #(
-    parameter ERR_W      = 12,
+    parameter ERR_W      = 32,
     parameter GAIN_W     = 32,
     parameter ACCUM_W    = 32,
     parameter FRAC_BITS  = 16,
@@ -41,30 +41,19 @@ module pi_loop_filter #(
     assign p_mult = $signed(error) * $signed(kp);
     assign i_mult = $signed(error) * $signed(ki);
 
-    //--------------------------------------------------
-    // Fixed-point scaling
-    //--------------------------------------------------
     wire signed [ACCUM_W-1:0] p_term;
-    wire signed [ACCUM_W-1:0] i_term;
-
-    assign p_term = p_mult >>> FRAC_BITS;
-    assign i_term = i_mult >>> FRAC_BITS;
-
-    //--------------------------------------------------
-    // Python:
-    // integrator -= Ki*error
-    //--------------------------------------------------
     wire signed [ACCUM_W-1:0] integrator_next;
-
-    assign integrator_next = integrator - i_term;
-
-    //--------------------------------------------------
-    // Python:
-    // pi_out = integrator - Kp*error
-    //--------------------------------------------------
     wire signed [ACCUM_W-1:0] pi_out;
 
-    assign pi_out = integrator_next - p_term;
+    // Proportional term can be shifted immediately
+    assign p_term = p_mult >>> FRAC_BITS;
+
+    // Integrator MUST accumulate the full un-shifted i_mult to prevent dead-zones!
+    assign integrator_next = integrator - i_mult;
+
+    // Only shift the integrator when calculating the final control output
+    assign pi_out = (integrator_next >>> FRAC_BITS) - p_term;
+
 
     //--------------------------------------------------
     // alpha = 0.625 (5/8)
