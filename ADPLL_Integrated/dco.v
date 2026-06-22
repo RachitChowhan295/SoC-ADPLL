@@ -1,20 +1,47 @@
-// Behavioral DCO model implemented as per ADPLL Python model
-
 module dco_model(
-    input clk,
     input rst,
-    input signed [31:0] ctrl_word,
-    output reg [31:0] freq_dco
+    input signed [15:0] ctrl_word,
+    output reg dco_clk
 );
 
-parameter F_FREE_HZ  = 2500000000;
-parameter KO_GAIN_HZ = 50000000;
+parameter integer F_FREE_MHZ = 2500;
+parameter integer KDCO_MHZ   = 50;
 
-always @(posedge clk or posedge rst) begin
-    if(rst)
-        freq_dco <= F_FREE_HZ;
-    else
-        freq_dco <= F_FREE_HZ + ctrl_word * KO_GAIN_HZ;
+integer freq_mhz;
+integer period_ps;
+integer half_period_ps;
+
+initial begin
+    dco_clk = 1'b0;
 end
+
+always @(*) begin
+
+    freq_mhz = F_FREE_MHZ + (ctrl_word * KDCO_MHZ);
+
+    if(freq_mhz < 100)
+        freq_mhz = 100;
+
+    period_ps = 1000000 / freq_mhz;
+    half_period_ps = period_ps / 2;
+
+end
+
+always begin
+
+    if(rst) begin
+        dco_clk = 1'b0;
+        #100;
+    end
+    else begin
+        #(half_period_ps)
+        dco_clk = ~dco_clk;
+    end
+
+end
+
+// Behavioral DCO model for ADPLL integration.
+// Frequency is controlled by ctrl_word and follows the
+// same concept used in the Python system model.
 
 endmodule
