@@ -25,7 +25,7 @@ module adpll_top(
         .rst(rst), 
         .phase_error(coarse_error)
     );
-
+//tdc
     sim_vernier_tdc tdc_inst (
         .clk_ref(ref_clk),
         .clk_dco(fb_clk),
@@ -51,7 +51,7 @@ module adpll_top(
     );
 // m1_reg, F_mod and c2_prev will be connected from MASH module
 
-   // TDC MODULE HERE-------
+   
 
     assign ctrl_word_out = ctrl_word;
     reg [15:0] counter; 
