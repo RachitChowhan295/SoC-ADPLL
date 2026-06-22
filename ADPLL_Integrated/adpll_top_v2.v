@@ -54,15 +54,15 @@ module adpll_top(
    // TDC MODULE HERE-------
 
     assign ctrl_word_out = ctrl_word;
-    reg [15:0] counter; // added to keep a track of the number of cycles taking place
+    reg [15:0] counter; 
     wire do_update;
     wire signed [31:0] current_phi_error; 
     wire signed [15:0] ctrl_word;
 
     cic_decimator cic_inst(
-        .clk(ref_clk),              //  Use ref_clk, not clk
-        .rst_n(~rst),               //  Invert active-high rst to active-low
-        .phase_residual(phase_residual), //  Route DTC output into CIC
+        .clk(ref_clk),              
+        .rst_n(~rst),               
+        .phase_residual(phase_residual), 
         .counter(counter),
         .do_update(do_update),      
         .current_phi_error(current_phi_error) 
@@ -78,9 +78,9 @@ module adpll_top(
     );
     
     pi_loop_filter filter (
-        .clk(ref_clk),              // Use ref_clk
-        .rst_n(~rst),               //  Invert top-level reset
-        .enable(do_update),         //  Gated by CIC decimator
+        .clk(ref_clk),              
+        .rst_n(~rst),               
+        .enable(do_update),         
         .error(current_phi_error),
         .kp(kp),
         .ki(ki),
