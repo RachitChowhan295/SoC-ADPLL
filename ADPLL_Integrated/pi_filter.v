@@ -7,7 +7,7 @@ module pi_loop_filter #(
     parameter FRAC_BITS  = 16,
     parameter OUT_W      = 16,
 
-    parameter signed [ACCUM_W-1:0] PRELOAD   = -32'sd3000,
+    parameter signed [ACCUM_W-1:0] PRELOAD   = 32'sd0,
 
     parameter signed [ACCUM_W-1:0] INTEG_MAX = 32'sd2147483647,
     parameter signed [ACCUM_W-1:0] INTEG_MIN = -32'sd2147483647
