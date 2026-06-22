@@ -4,7 +4,7 @@ module tb_adpll_backend();
 
     // ─── 1. SYSTEM SIGNALS ──────────────────────────────────────────
     reg clk;
-    reg rst_n;
+    reg rst;   // CHANGED to active-high
 
     // ─── 2. BACKEND WIRES ───────────────────────────────────────────
     wire signed [24:0] tdc_phase_residual; // Fake TDC input to your CIC
@@ -22,7 +22,7 @@ module tb_adpll_backend();
     // ─── 3. INSTANTIATE YOUR MODULES ────────────────────────────────
     cic_decimator cic_inst(
         .clk(clk),
-        .rst_n(rst_n),
+        .rst(rst),   // CHANGED to active-high direct mapping
         .phase_residual(tdc_phase_residual),
         .counter(counter),
         .do_update(do_update),
@@ -37,7 +37,7 @@ module tb_adpll_backend();
 
     pi_loop_filter filter(
         .clk(clk),
-        .rst_n(rst_n),
+        .rst(rst),   // CHANGED to active-high direct mapping
         .enable(do_update),
         .error(current_phi_error),
         .kp(kp),
@@ -47,7 +47,7 @@ module tb_adpll_backend();
 
     lock_detector detector(
         .clk(clk),
-        .rst_n(rst_n),
+        .rst(rst),   // CHANGED to active-high direct mapping
         .error(current_phi_error),
         .lock(lock)
     );
@@ -85,7 +85,7 @@ module tb_adpll_backend();
         f_free      = 1000.0e6;  
         
         // 👉 CHANGE THIS TO ANYTHING (e.g., 1000.0e6, 3000.0e6)
-        target_freq =4000.0e6;  
+        target_freq = 4000.0e6;  
         
         ko_gain     = 100.0e3;    
         N_div       = target_freq / f_ref;
@@ -93,7 +93,7 @@ module tb_adpll_backend();
     end
 
     always @(posedge clk) begin
-        if (!rst_n) begin
+        if (rst) begin   // CHANGED to check for active-high reset
             actual_phase_error = 0.0;
             tdc_quant_err      = 0.0;
             phase_res_int      = 0;
@@ -133,7 +133,7 @@ module tb_adpll_backend();
     // ─── 6. TEST SEQUENCE & TELEMETRY ───────────────────────────────
     integer cycle_count = 0;
     always @(posedge clk) begin
-        if (rst_n) cycle_count = cycle_count + 1;
+        if (!rst) cycle_count = cycle_count + 1;  // CHANGED to count only when NOT resetting
         
         // Print Telemetry every 1000 Reference Cycles
         if (cycle_count % 1000 == 0 && cycle_count > 0) begin
@@ -147,9 +147,10 @@ module tb_adpll_backend();
         $display(" BACKEND ISOLATION TEST (NO FRONT-END MODULES)    ");
         $display("==================================================");
         
-        rst_n = 0;
+        // CHANGED stimulus to drive active-high logic
+        rst = 1;
         #25;      
-        rst_n = 1;
+        rst = 0;
         
         #150000; // Run for 15,000 reference cycles
         
