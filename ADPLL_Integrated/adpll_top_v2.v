@@ -85,6 +85,12 @@ module adpll_top(
         .ki(ki),
         .ctrl_word(ctrl_word)       
     );
+
+    dco_model dco_inst(
+        .rst(rst),
+        .ctrl_word(ctrl_word),
+        .dco_clk(dco_clk)
+    );
     
     wire lock;                    
     lock_detector detector(
