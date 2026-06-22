@@ -1,16 +1,15 @@
 module lock_detector(
     input  wire        clk,
     input  wire        rst_n,
-    input  wire signed [31:0] error,   // FIXED: Changed from [11:0] to [31:0]
+    input  wire signed [31:0] error,   
     output reg         lock
 );
 
-parameter signed [31:0] THRESHOLD  = 32'd150; // Aligned parameter width
+parameter signed [31:0] THRESHOLD  = 32'd150; 
 parameter LOCK_COUNT = 6'd32;
 
 reg [5:0] counter;
 
-// FIXED: Adjusted the sign bit check for 32-bit two's complement
 wire signed [31:0] abs_error = error[31] ? -error : error; 
 
 always @(posedge clk or negedge rst_n) begin
