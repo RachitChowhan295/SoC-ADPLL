@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
 
-// TB to be run with gain scheduler
+// PI-Filter uses all inputs to generate a ctrl_word which changes the output finally
 
 module pi_loop_filter #(
     parameter ERR_W      = 32,
@@ -26,15 +26,9 @@ module pi_loop_filter #(
     output reg signed [OUT_W-1:0] ctrl_word
 );
 
-    //--------------------------------------------------
-    // State
-    //--------------------------------------------------
     reg signed [ACCUM_W-1:0] integrator;
     reg signed [ACCUM_W-1:0] ctrl_word_q;
 
-    //--------------------------------------------------
-    // Full-width multipliers
-    //--------------------------------------------------
     wire signed [ERR_W+GAIN_W-1:0] p_mult;
     wire signed [ERR_W+GAIN_W-1:0] i_mult;
 
@@ -45,20 +39,13 @@ module pi_loop_filter #(
     wire signed [ACCUM_W-1:0] integrator_next;
     wire signed [ACCUM_W-1:0] pi_out;
 
-    // Proportional term can be shifted immediately
     assign p_term = p_mult >>> FRAC_BITS;
 
-    // Integrator MUST accumulate the full un-shifted i_mult to prevent dead-zones!
     assign integrator_next = integrator - i_mult;
 
-    // Only shift the integrator when calculating the final control output
     assign pi_out = (integrator_next >>> FRAC_BITS) - p_term;
 
 
-    //--------------------------------------------------
-    // alpha = 0.625 (5/8)
-    // beta  = 0.375 (3/8)
-    //--------------------------------------------------
     wire signed [ACCUM_W-1:0] alpha_term;
     wire signed [ACCUM_W-1:0] beta_term;
     wire signed [ACCUM_W-1:0] ctrl_next;
@@ -68,17 +55,13 @@ module pi_loop_filter #(
 
     assign ctrl_next = alpha_term + beta_term;
 
-    //--------------------------------------------------
-    // Sequential Logic
-    //--------------------------------------------------
   always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             integrator  <= PRELOAD;
             ctrl_word_q <= PRELOAD;
             ctrl_word   <= PRELOAD[OUT_W-1:0];
         end
-        else if (enable) begin              // <--- ADD THIS GATE
-            // Integrator anti-windup
+        else if (enable) begin              
             if (integrator_next > INTEG_MAX)
                 integrator <= INTEG_MAX;
             else if (integrator_next < INTEG_MIN)
@@ -86,14 +69,9 @@ module pi_loop_filter #(
             else
                 integrator <= integrator_next;
 
-            //------------------------------------------
-            // Control word smoothing
-            //------------------------------------------
             ctrl_word_q <= ctrl_next;
 
-            //------------------------------------------
-            // Output saturation
-            //------------------------------------------
+
             if (ctrl_next > 32767)
                 ctrl_word <= 16'sd32767;
             else if (ctrl_next < -32768)
