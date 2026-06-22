@@ -1,11 +1,13 @@
 `timescale 1ns/1ps
 
+// CIC Decimator including a counter and is used to send the do_update signal and current_phi error signal
+
 module cic_decimator #(
     parameter DECIM = 4
 )(
     input  wire clk,
     input  wire rst_n,
-    input  wire signed [24:0] phase_residual, // From your teammates' DTC
+    input  wire signed [24:0] phase_residual, 
     
     output reg  [15:0] counter,
     output reg  do_update,
@@ -24,15 +26,13 @@ module cic_decimator #(
             acc2_z1 <= 0;
             diff1_z1 <= 0;
             decim_cnt <= 0;
-            counter <= 0;       // Reset the feedback cycle counter
+            counter <= 0;       
             do_update <= 0;
             current_phi_error <= 0;
         end else begin
-            // High-Speed Accumulator Stage (Runs every clock)
             acc1 <= acc1 + phase_residual;
             acc2 <= acc2 + acc1;
 
-            // Decimated Differentiator Stage (Runs every 4th clock)
             if (decim_cnt == (DECIM - 1)) begin
                 decim_cnt <= 0;
                 do_update <= 1'b1; 
@@ -42,12 +42,10 @@ module cic_decimator #(
                 acc2_z1 <= acc2;
                 diff1_z1 <= (acc2 - acc2_z1);
                 
-                // Arithmetic shift right by 4 (divide by 16)
                 current_phi_error <= ((acc2 - acc2_z1) - diff1_z1) >>> 4;
             end else begin
                 decim_cnt <= decim_cnt + 1;
                 do_update <= 1'b0;
-                // counter holds its value until the next feedback update
             end
         end
     end
