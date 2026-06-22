@@ -14,8 +14,8 @@ module adpll_top(
 
     wire signed [24:0] coarse_error;
     wire signed [5:0] fine_error;
-    wire signed [31:0] ctrl_word;
-    wire [31:0] dco_freq;
+    wire signed [15:0] ctrl_word;
+    wire dco_clk;
 
     phase_detector pd_inst (
         .ref_clk(ref_clk), 
@@ -49,13 +49,12 @@ module adpll_top(
     );
 // m1_reg, F_mod and c2_prev will be connected from MASH module
 
-    dco_model dco_inst (
-    .clk(ref_clk),
-    .rst(rst),
-    .ctrl_word(ctrl_word),
-    .freq_dco(dco_freq)
-);
+    dco_model dco_inst(
+        .rst(rst),
+        .ctrl_word(ctrl_word),
+        .dco_clk(dco_clk)
+    );
     // ctrl_word will come from PI Filter
-    // dco_freq will be used by Clock Divider / DCO output generation
+    // dco_clk will be connected to Clock Divider
     
 endmodule
