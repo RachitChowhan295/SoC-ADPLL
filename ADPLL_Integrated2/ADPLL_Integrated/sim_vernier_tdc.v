@@ -29,7 +29,7 @@ module sim_vernier_tdc #(
         end
     endgenerate
 
-  
+  integer j;
     always @(*) begin
         tdc_fine_out = 6'sd0; 
         for (j = STAGES - 1; j >= 0; j = j - 1) begin
