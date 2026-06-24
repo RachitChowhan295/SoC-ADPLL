@@ -2,20 +2,20 @@
 module gain_scheduler #(
 
     // Fast acquisition mode (500 kHz BW)
-    parameter signed [31:0] KP_FAST = 32'd2448,
-    parameter signed [31:0] KI_FAST = 32'd27,
+    parameter signed [31:0] KP_FAST = 32'd6000,
+    parameter signed [31:0] KI_FAST = 32'd200,
 
     // Medium bandwidth mode (100 kHz BW)
-    parameter signed [31:0] KP_MED  = 32'd734,
-    parameter signed [31:0] KI_MED  = 32'd2,
+    parameter signed [31:0] KP_MED  = 32'd800,
+    parameter signed [31:0] KI_MED  = 32'd5,
 
     // Tracking mode (30 kHz BW)
-    parameter signed [31:0] KP_SLOW = 32'd230,
+    parameter signed [31:0] KP_SLOW = 32'd50,
     parameter signed [31:0] KI_SLOW = 32'd1,
 
     // Feedback Cycle Thresholds
-    parameter FAST_END = 16'd625,  
-    parameter MED_END  = 16'd875   
+    parameter FAST_END = 16'd300,  
+    parameter MED_END  = 16'd600   
 
 )(
     input  wire [15:0] counter,
