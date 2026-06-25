@@ -14,8 +14,8 @@ module gain_scheduler #(
     parameter signed [31:0] KI_SLOW = 32'd1,
 
     // Feedback Cycle Thresholds
-    parameter FAST_END = 16'd300,  
-    parameter MED_END  = 16'd600   
+    parameter FAST_END = 16'd75,  
+    parameter MED_END  = 16'd150   
 
 )(
     input  wire [15:0] counter,
