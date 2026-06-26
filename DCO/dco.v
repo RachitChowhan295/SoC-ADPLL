@@ -42,8 +42,4 @@ always begin
 
 end
 
-// Behavioral DCO model for ADPLL integration.
-// Frequency is controlled by ctrl_word and follows the
-// same concept used in the Python system model.
-
 endmodule
