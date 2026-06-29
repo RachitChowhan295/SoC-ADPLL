@@ -52,4 +52,4 @@ always @(posedge clk or posedge rst) begin
         dtc_code <= dtc_code_next;
     end
 end
-
+endmodule
