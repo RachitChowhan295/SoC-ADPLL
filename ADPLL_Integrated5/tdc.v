@@ -40,3 +40,4 @@ module snapshot_tdc(
             end
         end
     end
+endmodule
