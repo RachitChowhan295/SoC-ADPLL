@@ -1,9 +1,6 @@
 `timescale 1ns/1ps
 
 module cic_decimator #(
-    // 🚀 SPEED UP: Changed Decimation from 4 to 2.
-    // The PI loop filter will now update every 2 clock cycles instead of 4,
-    // allowing the Integrator to wind up twice as fast without needing massive, unstable Ki values!
     parameter DECIM = 2
 )(
     input  wire clk,
@@ -49,9 +46,6 @@ module cic_decimator #(
 
                 acc2_z1 <= acc2_next;
                 diff1_z1 <= diff1_now;
-                
-                // 🚨 MATH FIX: Because Decimation is now 2, the DC Gain of a 2-stage CIC is 2^2 = 4.
-                // We MUST change the shift from >>> 4 to >>> 2 (dividing by 4) to keep the error scale perfectly 1:1!
                 current_phi_error <= diff2_now >>> 2;
             end else begin
                 decim_cnt <= decim_cnt + 2'd1;
