@@ -6,7 +6,7 @@ module dco_model(
     output reg dco_clk
 );
 
-parameter integer F_FREE_MHZ = 2500;
+parameter integer F_FREE_MHZ = 3500;
 parameter integer KDCO_MHZ   = 50;
 
 integer freq_mhz;
