@@ -37,3 +37,4 @@ always @(*) begin
         kp = KP_SLOW;
         ki = KI_SLOW;
     end
+    endmodule
