@@ -10,7 +10,9 @@ module pi_loop_filter #(
     parameter signed [ACCUM_W-1:0] PRELOAD   = 32'sd0,
 
     parameter signed [ACCUM_W-1:0] INTEG_MAX = 32'sd2147483647,
-    parameter signed [ACCUM_W-1:0] INTEG_MIN = -32'sd2147483647
+    parameter signed [ACCUM_W-1:0] INTEG_MIN = -32'sd2147483647,
+    parameter signed [ACCUM_W-1:0] CTRL_MAX = (1 << (OUT_W - 1)) - 1,
+    parameter signed [ACCUM_W-1:0] CTRL_MIN = -(1 << (OUT_W - 1))
 )(
     input  wire clk,
     input  wire rst,       
@@ -34,11 +36,22 @@ module pi_loop_filter #(
     assign i_mult = $signed(error) * $signed(ki);
 
     wire signed [ACCUM_W-1:0] p_term;
-    wire signed [ACCUM_W-1:0] integrator_next;
-    wire signed [ACCUM_W-1:0] pi_out;
-
     assign p_term = p_mult >>> FRAC_BITS;
-    assign integrator_next = integrator - i_mult;
+
+    wire signed [ERR_W+GAIN_W-1:0] integ_calc;
+    assign integ_calc = $signed(integrator) - i_mult;
+
+    reg signed [ACCUM_W-1:0] integrator_next;
+    always @(*) begin
+        if (integ_calc > $signed(INTEG_MAX))
+            integrator_next = INTEG_MAX;
+        else if (integ_calc < $signed(INTEG_MIN))
+            integrator_next = INTEG_MIN;
+        else
+            integrator_next = integ_calc[ACCUM_W-1:0];
+    end
+
+    wire signed [ACCUM_W-1:0] pi_out;
     assign pi_out = (integrator_next >>> FRAC_BITS) - p_term;
 
     wire signed [ACCUM_W-1:0] alpha_term;
@@ -50,28 +63,21 @@ module pi_loop_filter #(
     assign ctrl_next = alpha_term + beta_term;
 
     always @(posedge clk or posedge rst) begin 
-        if (rst) begin                         
+        if (rst) begin                                
             integrator  <= PRELOAD;
             ctrl_word_q <= PRELOAD;
             ctrl_word   <= PRELOAD[OUT_W-1:0];
         end
         else if (enable) begin              
-            if (integrator_next > INTEG_MAX)
-                integrator <= INTEG_MAX;
-            else if (integrator_next < INTEG_MIN)
-                integrator <= INTEG_MIN;
-            else
-                integrator <= integrator_next;
-
+            integrator  <= integrator_next;
             ctrl_word_q <= ctrl_next;
 
-            if (ctrl_next > 32767)
-                ctrl_word <= 16'sd32767;
-            else if (ctrl_next < -32768)
-                ctrl_word <= -16'sd32768;
+            if (ctrl_next > CTRL_MAX)
+                ctrl_word <= CTRL_MAX[OUT_W-1:0];
+            else if (ctrl_next < CTRL_MIN)
+                ctrl_word <= CTRL_MIN[OUT_W-1:0];
             else
                 ctrl_word <= ctrl_next[OUT_W-1:0];
         end
     end
-
 endmodule
