@@ -79,6 +79,9 @@ module adpll_top(
     wire signed [31:0] ki;
 
     gain_scheduler scheduler(
+        .clk(ref_clk),          // Add this
+        .reset(rst),            // Add this
+        .loop_tick(do_update),  // Add this: triggers the sequential step
         .counter(counter),
         .kp(kp),
         .ki(ki)
