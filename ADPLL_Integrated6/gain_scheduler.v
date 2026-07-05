@@ -1,53 +1,42 @@
 `timescale 1ns/1ps
 module gain_scheduler #(
-    // 1. Mathematically Derived Acquisition Targets (500 kHz BW, Z = 1.0)
-    parameter signed [31:0] KP_START = 32'd160845,
-    parameter signed [31:0] KI_START = 32'd10105,
 
-    // 2. Mathematically Derived Tracking Targets (50 kHz BW, Z = 0.707)
-    parameter signed [31:0] KP_MIN = 32'd11372,
-    parameter signed [31:0] KI_MIN = 32'd101,
+    // Fast acquisition mode (500 kHz BW)
+    parameter signed [31:0] KP_FAST = 32'd35000,
+    parameter signed [31:0] KI_FAST = 32'd1500,
 
-    // 3. Precise Decay Steps (Calculated for a 2000 loop-tick transition)
-    parameter signed [31:0] KP_STEP = 32'd75,
-    parameter signed [31:0] KI_STEP = 32'd5,
+    // Medium bandwidth mode (100 kHz BW)
+    parameter signed [31:0] KP_MED  = 32'd35000,
+    parameter signed [31:0] KI_MED  = 32'd1600,
 
-    // 4. Hold Timer (Give it 2000 loop ticks / 8000 ref cycles to hit 0 error)
-    parameter HOLD_CYCLES = 16'd2000
+    // Tracking mode (30 kHz BW)
+    parameter signed [31:0] KP_SLOW = 32'd35000,
+    parameter signed [31:0] KI_SLOW = 32'd1600,
+
+    // Feedback Cycle Thresholds
+    parameter FAST_END = 16'd500,  
+    parameter MED_END  = 16'd14000  
+
 )(
-    input  wire clk,
-    input  wire reset,
-    input  wire loop_tick,      
-    input  wire [15:0] counter, 
+    input  wire [15:0] counter,
     output reg signed [31:0] kp,
     output reg signed [31:0] ki
 );
 
-    always @(posedge clk or posedge reset) begin
-        if (reset) begin
-            kp <= KP_START;
-            ki <= KI_START;
-        end 
-        else if (loop_tick) begin
-            
-            if (counter > HOLD_CYCLES) begin
-                
-                // Sequentially step down KP
-                if (kp > (KP_MIN + KP_STEP)) begin
-                    kp <= kp - KP_STEP;
-                end else begin
-                    kp <= KP_MIN;
-                end
+always @(*) begin
 
-                // Sequentially step down KI
-                if (ki > (KI_MIN + KI_STEP)) begin
-                    ki <= ki - KI_STEP;
-                end else begin
-                    ki <= KI_MIN;
-                end
-                
-            end
-        end
+    if(counter < FAST_END) begin
+        kp = KP_FAST;
+        ki = KI_FAST;
+    end
+    else if(counter < MED_END) begin
+        kp = KP_MED;
+        ki = KI_MED;
+    end
+    else begin
+        kp = KP_SLOW;
+        ki = KI_SLOW;
     end
 
+end
 endmodule
