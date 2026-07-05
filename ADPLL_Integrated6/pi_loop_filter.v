@@ -39,8 +39,7 @@ module pi_loop_filter #(
 
     assign p_term = p_mult >>> FRAC_BITS;
     assign integrator_next = integrator - (i_mult >>> FRAC_BITS);
-    assign pi_out = (integrator_next >>> FRAC_BITS) - p_term;
-
+    assign pi_out = integrator_next - p_term;
     wire signed [ACCUM_W-1:0] alpha_term;
     wire signed [ACCUM_W-1:0] beta_term;
     wire signed [ACCUM_W-1:0] ctrl_next;
