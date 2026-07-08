@@ -112,15 +112,10 @@ dco_nco #(
     .FTW_FREE  (32'd0),
     .KO_SCALE  (32'd0)
 ) dco_inst (
-
     .clk_fast  (clk_fast),
-
     .rst       (rst),
-
     .ctrl_word (inverted_ctrl_word),
-
     .dco_clk   (dco_clk)
-
 );
     
     wire lock;                    
