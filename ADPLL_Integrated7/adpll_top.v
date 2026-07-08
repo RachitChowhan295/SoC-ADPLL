@@ -30,13 +30,27 @@ module adpll_top(
         .rst(rst), 
         .phase_error(coarse_error)
     );
+
+    
 //tdc
-    sim_vernier_tdc tdc_inst (
-        .clk_ref(ref_clk),
-        .clk_dco(fb_clk),
-        .rst(rst),
-        .tdc_fine_out(fine_error)
-    );
+//====================================================
+// Synthesizable FPGA TDC (CARRY4 Based)
+//====================================================
+wire                 tdc_valid;
+wire [63:0]          therm_out;
+adpll_tdc #(
+    .NUM_TAPS(64)
+) tdc_inst (
+    .dtc_out    (ref_clk),      // TODO: Later connect to DTC delayed output
+    .fb_clk     (fb_clk),
+    .ref_clk    (ref_clk),
+    .rst_n      (~rst),
+    .tdc_error  (fine_error),
+    .valid      (tdc_valid),
+    .therm_out  (therm_out)
+);
+
+    
 
     // Scale coarse error (x128) to align with 7-bit TDC bins
     wire signed [24:0] scaled_coarse = coarse_error <<< 7;
