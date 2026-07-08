@@ -2,6 +2,7 @@
 
 module adpll_top(
     input wire ref_clk,
+    input wire clk_fast,
     input wire rst,
 
     input wire[5:0]N_int,
