@@ -96,12 +96,32 @@ module adpll_top(
         .ctrl_word(ctrl_word)       
     );
     
-    wire signed [15:0] inverted_ctrl_word = -ctrl_word;
-    dco_model dco_inst(
-        .rst(rst),
-        .ctrl_word(inverted_ctrl_word),
-        .dco_clk(dco_clk)
-    );
+    //====================================================
+// FPGA Synthesizable DCO (NCO Based)
+//====================================================
+
+wire clk_fast;      // Fast FPGA clock from MMCM (parameter to be finalized)
+wire signed [15:0] inverted_ctrl_word;
+assign inverted_ctrl_word = -ctrl_word;
+dco_nco #(
+    .ACC_WIDTH (32),
+    // ===================================================
+    // TODO:
+    // Replace these after Python model is finalized
+    // ===================================================
+    .FTW_FREE  (32'd0),
+    .KO_SCALE  (32'd0)
+) dco_inst (
+
+    .clk_fast  (clk_fast),
+
+    .rst       (rst),
+
+    .ctrl_word (inverted_ctrl_word),
+
+    .dco_clk   (dco_clk)
+
+);
     
     wire lock;                    
     lock_detector detector(
