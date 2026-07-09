@@ -16,7 +16,6 @@ module dtc_model #(
     output reg signed [24:0] phase_residual,
     output reg [4:0] dtc_code
 );
-
 // =========================================================
 // 1. INVERSE ROM FOR F_MOD (The Division Killer)
 // Pre-calculate (65536 / F_mod) to multiply instead of divide.
@@ -27,7 +26,7 @@ initial begin
     inv_f_rom[0] = 0; // Prevent divide by zero
     for (i = 1; i < 128; i = i + 1) begin
         // The (+ i>>1) ensures perfectly rounded math
-        inv_f_rom[i] = (65536 + (i >> 1)) / i; 
+        inv_f_rom[i] = (65536 + (i >> 1)) / i;
     end
 end
 
@@ -43,8 +42,9 @@ reg        c2_prev_q1;
 reg signed [24:0] phase_error_q2;
 reg [4:0]  dtc_code_q2;
 
-reg [31:0] math_temp; // Safe 32-bit bucket for large DSP products
-integer temp_code;
+reg [31:0] math_temp;
+reg [31:0] math_temp2; // FIX: Added dedicated register for Stage 3
+integer temp_code;     // Safe 32-bit bucket for large DSP products
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
@@ -58,6 +58,11 @@ always @(posedge clk or posedge rst) begin
 
         phase_residual <= 25'sd0;
         dtc_code       <= 5'd0;
+        
+        // FIX: Explicitly clear scratch registers to prevent transient X values
+        math_temp      <= 32'd0;
+        math_temp2     <= 32'd0;
+        temp_code      <= 0;
     end else begin
         // ==========================================
         // STAGE 1: Multiplication and ROM Read
@@ -73,18 +78,17 @@ always @(posedge clk or posedge rst) begin
         // ==========================================
         phase_error_q2 <= phase_error_q1;
         
-        // FIX: Use non-blocking <= for sequential assignments
         math_temp <= (dividend_q1 * inv_F_q1) + 32768;
         temp_code <= math_temp >> 16; 
         
         if (c2_prev_q1 && temp_code > 0)
             temp_code <= temp_code - 1;
-
+            
         if (temp_code < 0)
             temp_code <= 0;
         else if (temp_code > MAX_CODE)
             temp_code <= MAX_CODE;
-
+            
         dtc_code_q2 <= temp_code[4:0];
 
         // ==========================================
@@ -92,9 +96,9 @@ always @(posedge clk or posedge rst) begin
         // ==========================================
         dtc_code <= dtc_code_q2;
         
-        // FIX: Use non-blocking <= for sequential assignments
-        math_temp <= (dtc_code_q2 * PHASE_FULL_SCALE * INV_MAX_CODE) + 32768;
-        phase_residual <= phase_error_q2 - (math_temp >> 16);
+        // FIX: Use math_temp2 to avoid colliding with Stage 2's math_temp
+        math_temp2 <= (dtc_code_q2 * PHASE_FULL_SCALE * INV_MAX_CODE) + 32768;
+        phase_residual <= phase_error_q2 - (math_temp2 >> 16);
     end
 end
 
