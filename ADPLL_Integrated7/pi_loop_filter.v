@@ -4,7 +4,7 @@ module pi_loop_filter #(
     parameter ERR_W      = 32,
     parameter GAIN_W     = 32,
     parameter ACCUM_W    = 32,
-    parameter FRAC_BITS  = 16,
+    parameter FRAC_BITS  = 24,
     parameter OUT_W      = 16,
 
     parameter signed [ACCUM_W-1:0] PRELOAD   = 32'sd0,
