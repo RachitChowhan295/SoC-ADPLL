@@ -148,9 +148,9 @@ module tb_adpll_top();
         // CHANGED from the old F_mod=100/K_mod=57 (which encoded a
         // different, arbitrary fraction) to match the model exactly:
         // Fraction(0.1).limit_denominator(100) = 1/10.
-        N_int = 6'd30;
-        F_mod = 7'd10;
-        K_mod = 7'd1;
+        N_int = 6'd23;
+        F_mod = 7'd100;
+        K_mod = 7'd67;
 
         // =======================================================
 
@@ -160,7 +160,7 @@ module tb_adpll_top();
         // Python model locked at ref cycle 291 out of 600. At 640 ns/
         // cycle that's ~186 us to lock. Run well past that to observe
         // steady-state tracking: 1000 ref cycles = 640,000 ns = 640 us.
-        #640000;
+        #6400000;
 
         print_ndiv_average;
 
