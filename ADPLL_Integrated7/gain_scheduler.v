@@ -11,14 +11,14 @@ module gain_scheduler #(
     // below TH_MED -> "fine tracking" gains
 
     // ---- Gain sets (Q16.16 fixed point, matching FRAC_BITS=16) ----
-    parameter signed [GAIN_W-1:0] KP_LARGE = 32'sd20000,
-    parameter signed [GAIN_W-1:0] KI_LARGE = 32'sd80,
+    parameter signed [GAIN_W-1:0] KP_LARGE = 32'sd7140618,
+    parameter signed [GAIN_W-1:0] KI_LARGE = 32'sd158649,
 
-    parameter signed [GAIN_W-1:0] KP_MED   = 32'sd15000,
-    parameter signed [GAIN_W-1:0] KI_MED   = 32'sd40,
+    parameter signed [GAIN_W-1:0] KP_MED   = 32'sd1428124,
+    parameter signed [GAIN_W-1:0] KI_MED   = 32'sd6346,
 
-    parameter signed [GAIN_W-1:0] KP_FINE  = 32'sd2500,
-    parameter signed [GAIN_W-1:0] KI_FINE  = 32'sd4,
+    parameter signed [GAIN_W-1:0] KP_FINE  = 32'sd142812,
+    parameter signed [GAIN_W-1:0] KI_FINE  = 32'sd63,
 
     // Hysteresis margin to prevent chattering near thresholds
     parameter [ERR_W-1:0] HYST = 32'd50
