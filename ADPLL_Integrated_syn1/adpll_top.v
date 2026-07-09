@@ -2,26 +2,28 @@
 
 module adpll_top(
     input wire ref_clk,
-    input wire clk_fast,
+    input wire board_clk, // <--- ADD THIS LINE
     input wire rst,
 
     input wire[5:0]N_int,
-    
-    //input wire [6:0] m1_reg,
     input wire [6:0] F_mod,
     input wire[6:0]K_mod,
-    //input wire c2_prev,
     
     output wire signed [24:0] phase_residual,
     output wire signed [15:0] ctrl_word_out,
     output wire fb_clk,
-    output wire [5:0]N_div
+    output wire [5:0]N_div,
+    output wire dco_clk_probe   // DEBUG PORT: exposes internal dco_clk for
+                                // post-implementation timing sim measurement.
+                                // Internal wires can be renamed/optimized away
+                                // by synthesis; a real port cannot.
 );
 
     wire signed [24:0] coarse_error;
     wire signed [7:0] fine_error;
     wire signed [15:0] ctrl_word;
-    wire dco_clk;
+    (* dont_touch = "true" *) wire dco_clk;
+    assign dco_clk_probe = dco_clk;
     
 
     phase_detector pd_inst (
@@ -38,6 +40,11 @@ module adpll_top(
 //====================================================
 wire                 tdc_valid;
 wire [63:0]          therm_out;
+
+    
+wire [6:0] m1_reg;
+wire c2_prev;
+    
 adpll_tdc #(
     .NUM_TAPS(64)
 ) tdc_inst (
@@ -58,7 +65,8 @@ adpll_tdc #(
     //assign scaled_coarse = $signed(coarse_error) * $signed(25'd1000);
 
     //wire signed [24:0] total_combined_error = scaled_coarse + fine_error;
-    wire signed [24:0] total_combined_error = scaled_coarse;
+  // Only add fine_error if the TDC says the data is valid and NOT 'x'
+    wire signed [24:0] total_combined_error = (tdc_valid === 1'b1) ? (scaled_coarse + fine_error) : scaled_coarse;
     
     wire [4:0] dtc_code; 
 
@@ -120,18 +128,15 @@ wire signed [15:0] inverted_ctrl_word;
 assign inverted_ctrl_word = -ctrl_word;
 dco_nco #(
     .ACC_WIDTH (32),
-    // ===================================================
-    // TODO:
-    // Replace these after Python model is finalized
-    // ===================================================
-    .FTW_FREE  (32'd0),
-    .KO_SCALE  (32'd0)
-) dco_inst (
-    .clk_fast  (clk_fast),
-    .rst       (rst),
-    .ctrl_word (inverted_ctrl_word),
-    .dco_clk   (dco_clk)
-);
+    .FTW_FREE(2019976806),
+    .KO_SCALE(42950)
+    
+) dco_inst(
+        .clk_fast(board_clk), // <--- Connect the new fast clock here
+        .rst(rst),
+        .ctrl_word(inverted_ctrl_word),
+        .dco_clk(dco_clk)
+    );
     
     wire lock;                    
     lock_detector detector(
@@ -141,9 +146,6 @@ dco_nco #(
         .lock(lock)        
     );
 
-    
-    wire [6:0] m1_reg;
-    wire c2_prev;
     
     mash_modulator mash_inst(
         .F_mod(F_mod), 
