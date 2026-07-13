@@ -27,10 +27,16 @@ module pi_loop_filter #(
     reg signed [ACCUM_W+16-1:0] integrator;
     reg signed [ACCUM_W-1:0] ctrl_word_q;
 
-    reg signed [ERR_W+GAIN_W-1:0] p_mult;
-    reg signed [ERR_W+GAIN_W-1:0] i_mult;
-    always @(posedge clk) begin 
-        if (enable) begin
+    (* use_dsp = "yes" *) reg signed [ERR_W+GAIN_W-1:0] p_mult;
+    (* use_dsp = "yes" *) reg signed [ERR_W+GAIN_W-1:0] i_mult;
+
+    wire signed [ERR_W-1:0] gated_error = enable ? error : 0;
+
+    always @(posedge clk or posedge rst) begin 
+        if (rst) begin
+            p_mult <= 0;
+            i_mult <= 0;
+        end else if (enable) begin
             p_mult <= $signed(error) * $signed(kp);
             i_mult <= $signed(error) * $signed(ki);
         end
@@ -41,17 +47,9 @@ module pi_loop_filter #(
     wire signed [ACCUM_W-1:0] pi_out;
 
     assign p_term = p_mult >>> FRAC_BITS;
-    // FIX: Cast i_mult to full width of integrator before subtraction
-    assign integrator_next = integrator - {{(ACCUM_W+16-ERR_W-GAIN_W){i_mult[ERR_W+GAIN_W-1]}}, i_mult};
+    assign integrator_next = integrator - i_mult;
     assign pi_out = (integrator_next >>> FRAC_BITS) - p_term;
-
-    wire signed [ACCUM_W-1:0] alpha_term;
-    wire signed [ACCUM_W-1:0] beta_term;
     wire signed [ACCUM_W-1:0] ctrl_next;
-
-    //assign alpha_term = ((pi_out <<< 2) + pi_out) >>> 3;
-    //assign beta_term  = ((ctrl_word_q <<< 1) + ctrl_word_q) >>> 3;
-    //assign ctrl_next = alpha_term + beta_term;
 
     assign ctrl_next = pi_out;
 
