@@ -38,9 +38,10 @@ module tb_adpll_top();
     // ─── 3. CLOCK GENERATION ─────────────────────────────────────────
     // board_clk: the actual physical oscillator on your board (100 MHz).
     // Free-running, independent of rst -- a real oscillator doesn't stop.
+    // ─── 3. CLOCK GENERATION (2 MHz) ──────────────────────────────
     initial begin
-        board_clk = 1'b0;
-        forever #5.0 board_clk = ~board_clk;   // 10 ns period = 100 MHz
+        ref_clk = 1'b0;
+        forever #250.0 ref_clk = ~ref_clk; // 500ns period = 2 MHz
     end
 
     // ref_clk: CHANGED from 100 MHz to 1.5625 MHz (640 ns period).
