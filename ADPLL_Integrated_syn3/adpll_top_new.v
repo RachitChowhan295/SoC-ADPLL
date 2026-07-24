@@ -127,8 +127,8 @@ wire signed [15:0] inverted_ctrl_word;
 assign inverted_ctrl_word = -ctrl_word;
 dco_nco #(
     .ACC_WIDTH (32),
-    .FTW_FREE(1002159036),
-    .KO_SCALE(14316558)
+    .FTW_FREE(1723713541),
+    .KO_SCALE(36651)
 
 ) dco_inst(
         .clk_fast(board_clk), // <--- Connect the new fast clock here
