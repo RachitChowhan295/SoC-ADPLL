@@ -10,24 +10,24 @@ module dtc_model #(
     input rst,
     input en,
 
-    input signed [24:0] phase_error,
+    input signed [15:0] phase_error,
     input [6:0] m1_reg,
     input [6:0] F_mod,
     input c2_prev,
 
-    output reg signed [24:0] phase_residual,
+    output reg signed [15:0] phase_residual,
     output reg [4:0] dtc_code
 );
 
-reg signed [24:0] phase_fract;
-reg signed [24:0] phase_residual_next;
+    reg signed [15:0] phase_fract;
+    reg signed [15:0] phase_residual_next;
 reg [4:0] dtc_code_next;
 
 integer temp_code;
 
 always @(*) begin
     temp_code = 0;
-    phase_fract = 25'sd0;
+    phase_fract = 16'sd0;
     phase_residual_next = phase_error;
     dtc_code_next = 5'd0;
 
@@ -53,7 +53,7 @@ end
 
 always @(posedge clk or posedge rst) begin
     if (rst) begin
-        phase_residual <= 25'sd0;
+        phase_residual <= 16'sd0;
         dtc_code <= 5'd0;
     end
     else if(en) begin
