@@ -3,16 +3,16 @@
 module lock_detector(
     input  wire        clk,
     input  wire        rst,      
-    input  wire signed [31:0] error,   
+    input  wire signed [22:0] error,   
     output reg         lock
 );
 
-parameter signed [31:0] THRESHOLD  = 32'd150; 
+    parameter signed [22:0] THRESHOLD  = 23'd150; 
 parameter LOCK_COUNT = 6'd32;
 
 reg [5:0] counter;
 
-wire signed [31:0] abs_error = error[31] ? -error : error; 
+    wire signed [22:0] abs_error = error[22] ? -error : error; 
 
 always @(posedge clk or posedge rst) begin  
     if(rst) begin                           
