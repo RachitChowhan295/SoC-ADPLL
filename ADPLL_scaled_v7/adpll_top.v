@@ -12,13 +12,13 @@ module adpll_top #(
     input wire[5:0]N_int,
     input wire[6:0]K_mod,
     
-    output wire signed [24:0] phase_residual,
+    output wire signed [15:0] phase_residual,
     output wire signed [15:0] ctrl_word_out,
     output wire fb_clk,
     output wire [5:0]N_div
 );
 
-    wire signed [24:0] coarse_error;
+    wire signed [15:0] coarse_error;
     wire signed [7:0] fine_error;
     wire dco_clk;
     wire [6:0] dco_frac_gray; 
@@ -61,11 +61,11 @@ module adpll_top #(
         .tdc_fine_out(fine_error)      
     );
 
-    wire signed [24:0] scaled_coarse = coarse_error <<< 7;
-    wire signed [24:0] total_combined_error = scaled_coarse + fine_error;
+    wire signed [15:0] scaled_coarse = coarse_error <<< 7;
+    wire signed [15:0] total_combined_error = scaled_coarse + fine_error;
     
     wire [4:0] dtc_code; 
-    wire signed [24:0]phase_residual_dtc;
+    wire signed [15:0]phase_residual_dtc;
     wire [6:0] m1_reg;
     wire c2_prev;
 
@@ -85,7 +85,7 @@ module adpll_top #(
     
     wire [15:0] counter; 
     wire do_update;
-    wire signed [31:0] current_phi_error; 
+    wire signed [22:0] current_phi_error; 
 
     cic_decimator cic_inst(
         .clk(ref_clk),              
@@ -105,7 +105,7 @@ module adpll_top #(
     ) scheduler_inst (
         .clk(ref_clk),                   
         .rst(rst),
-        .phase_error(current_phi_error[24:0]),    
+        .phase_error(current_phi_error[15:0]),    
         .kp_shift_sel(current_kp_shift),
         .ki_shift_sel(current_ki_shift)
     );
@@ -122,7 +122,7 @@ module adpll_top #(
         .clk(ref_clk),                   
         .rst(rst),
         .enable(pll_enable),              
-        .error(current_phi_error[24:0]),       
+        .error(current_phi_error[15:0]),       
         .kp_shift(current_kp_shift),
         .ki_shift(current_ki_shift),
         .ctrl_word(pll_ctrl)
