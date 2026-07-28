@@ -19,7 +19,7 @@ module cic_decimator #(
     wire signed [22:0] diff1_now = acc2_next - acc2_z1;
     wire signed [22:0] diff2_now = diff1_now - diff1_z1;
 
-    wire signed [22:0] acc1_next = acc1 + $signed({{7{phase_residual[24]}}, phase_residual});
+    wire signed [22:0] acc1_next = acc1 + $signed({{7{phase_residual[15]}}, phase_residual});
     wire signed [22:0] acc2_next = acc2 + acc1_next;
 
     parameter LOCK_COUNT = 12'd2000;
